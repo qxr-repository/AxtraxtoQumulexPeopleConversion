@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<title>AxTraxNG to Qumulex Converter</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one working column of four numbered steps (load, groups, review, export), the order a tech actually follows. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --sunk:#eaeef3; --ink:#152030; --muted:#5a6677; --line:#d9dfe7;
+  --accent:#0d6b86; --accent-ink:#ffffff; --accent-soft:#e1f0f5;
+  --crit:#b42318; --crit-soft:#fbe9e7; --warn:#9a5b00; --warn-soft:#fdf1dc; --ok:#2c7a47; --ok-soft:#e3f3e8;
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131a; --surface:#161d26; --sunk:#111821; --ink:#e4e9f0; --muted:#97a2b2; --line:#29323e;
+  --accent:#5ab8d3; --accent-ink:#06222b; --accent-soft:#163541;
+  --crit:#f2877a; --crit-soft:#3a1a17; --warn:#e9b35c; --warn-soft:#352812; --ok:#78c995; --ok-soft:#15301f;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131a; --surface:#161d26; --sunk:#111821; --ink:#e4e9f0; --muted:#97a2b2; --line:#29323e;
+  --accent:#5ab8d3; --accent-ink:#06222b; --accent-soft:#163541;
+  --crit:#f2877a; --crit-soft:#3a1a17; --warn:#e9b35c; --warn-soft:#352812; --ok:#78c995; --ok-soft:#15301f;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:22px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(1.7rem,3.6vw,2.3rem);font-weight:700;line-height:1.1}
+h2{font-size:1.3rem;font-weight:600;display:flex;align-items:baseline;gap:10px}
+.step{white-space:nowrap;font-family:var(--f-mono);font-size:.78rem;color:var(--accent);font-weight:500;letter-spacing:.06em}
+p{margin:0;max-width:68ch}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-size:.86em}
+header{display:grid;gap:8px}
+.privacy{display:inline-flex;gap:8px;align-items:center;font-size:.9rem;color:var(--ok);background:var(--ok-soft);padding:4px 10px;border-radius:999px;width:fit-content}
+section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:14px;min-width:0}
+.drop{border:1.5px dashed var(--line);border-radius:var(--r);padding:22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;background:var(--sunk);transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop strong{font-family:var(--f-display);font-size:1.1rem;font-weight:600}
+.banner{padding:10px 12px;border-radius:var(--r);font-size:.93rem;background:var(--warn-soft);color:var(--ink);border-left:3px solid var(--warn)}
+.banner.ok{background:var(--ok-soft);border-left-color:var(--ok)}
+.banner.crit{background:var(--crit-soft);border-left-color:var(--crit)}
+button,.btn{font:600 .95rem/1 var(--f-body);border-radius:var(--r);padding:10px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:hover{filter:brightness(1.05)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
+th{font-family:var(--f-display);font-weight:600;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--sunk);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;text-align:right}
+td.cred{font-family:var(--f-mono);font-size:.84rem;white-space:normal;min-width:12ch}
+input[type=text],select{font:inherit;font-size:.92rem;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);min-width:0}
+input.gid{width:100%;min-width:14ch;font-family:var(--f-mono);font-size:.85rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
+.tile{background:var(--sunk);border-radius:var(--r);padding:12px 14px;display:grid;gap:2px}
+.tile b{font-family:var(--f-display);font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile span{font-size:.84rem;color:var(--muted)}
+.tile.crit b{color:var(--crit)} .tile.warn b{color:var(--warn)}
+.pill{display:inline-block;font:600 .74rem/1 var(--f-body);padding:4px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.pill.crit{background:var(--crit-soft);color:var(--crit)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.info{background:var(--accent-soft);color:var(--accent)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 18px}
+.opts label{display:flex;gap:8px;align-items:flex-start;font-size:.93rem}
+.opts input{margin-top:4px;accent-color:var(--accent)}
+details{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+summary{cursor:pointer;font-weight:600}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+.map label{display:grid;gap:3px;font-size:.84rem;color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:6px 10px;font-size:.85rem;font-weight:500}
+.filters button[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.scroll{max-height:420px;overflow:auto}
+textarea{width:100%;min-height:140px;font:12px/1.4 var(--f-mono);border:1px solid var(--line);border-radius:var(--r);background:var(--sunk);color:var(--ink);padding:10px}
+.toast{font-size:.9rem;color:var(--ok)}
+a{color:var(--accent);text-underline-offset:2px}
+.kb{font-size:.92rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>AxTraxNG to Qumulex Converter</h1>
+    <p class="muted">Turns an AxTraxNG user export into a file the Qumulex <b>People &gt; Import Cardholders</b> tool accepts. Every person ends up on one row, with all of their cards in <span class="mono">SiteCode-CardCode</span> form, separated by spaces.</p>
+    <span class="privacy">Runs in your browser. The file is never uploaded.</span>
+  </header>
+
+  <section aria-labelledby="h1s">
+    <h2 id="h1s"><span class="step">STEP 1</span>Load the AxTraxNG export</h2>
+    <p class="muted">In AxTraxNG: <b>Tools &gt; Import/Export Data &gt; Export Users properties</b>, Excel format. Drop that file here (.xls, .xlsx or .csv).</p>
+    <label class="drop" id="drop" for="file">
+      <div><strong id="fileName">Drop the export here</strong><div class="muted" id="fileMeta">or choose a file</div></div>
+      <span class="btn">Choose file</span>
+      <input type="file" id="file" accept=".xls,.xlsx,.csv" hidden>
+    </label>
+    <div id="loadMsg" class="banner" hidden></div>
+  </section>
+
+  <section aria-labelledby="h2s">
+    <h2 id="h2s"><span class="step">STEP 2</span>Match Access Groups to Qumulex Groups</h2>
+    <p class="muted">Create the Groups in Qumulex first. Open each Group and copy the ID at the end of the browser's address bar into the matching row. To put an Access Group's people into more than one Qumulex Group, enter several GroupIDs separated by a space. Leave it blank to import people without a Group. Untick a row to leave those people out.</p>
+    <p class="muted kb">Qumulex KB: <a href="https://www.qumulex.com/kb/using-groups" target="_blank" rel="noopener">Using Groups</a> · <a href="https://www.qumulex.com/kb/importing-cardholders-to-qumulex" target="_blank" rel="noopener">Importing Cardholders (finding the GroupID)</a></p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Import</th><th>AxTraxNG Access Group</th><th class="num">People</th><th>Qumulex GroupID</th></tr></thead>
+      <tbody id="groups"></tbody>
+    </table></div>
+    <div class="opts">
+      <label><input type="checkbox" id="optNoCard" checked><span>Import people who have no card</span></label>
+      <label><input type="checkbox" id="optExpired" checked><span>Leave out people whose valid-until date has passed</span></label>
+      <label><input type="checkbox" id="optCase"><span>Fix name capitals (<span class="mono">ashley planas</span> → <span class="mono">Ashley Planas</span>)</span></label>
+      <label><input type="checkbox" id="optMiddle"><span>Add the middle name to FirstName</span></label>
+      <label><input type="checkbox" id="optMerge" checked><span>Combine records with the same first and last name into one person, with all their cards</span></label>
+      <label><input type="checkbox" id="optEmp"><span>Copy the AxTraxNG UserID (a record number, not an employee ID) into EmployeeID</span></label>
+    </div>
+  </section>
+
+  <section aria-labelledby="h3s">
+    <h2 id="h3s"><span class="step">STEP 3</span>Review before import</h2>
+    <div class="tiles" id="tiles"></div>
+    <div class="row" style="justify-content:space-between">
+      <div class="filters" id="filters" role="group" aria-label="Filter issues by priority"></div>
+    </div>
+    <div class="tablebox scroll"><table>
+      <thead><tr><th>Priority</th><th>UserID</th><th>Name</th><th>Issue</th></tr></thead>
+      <tbody id="issues"></tbody>
+    </table></div>
+    <details>
+      <summary>Preview the import file (first 50 people)</summary>
+      <div class="tablebox scroll" style="margin-top:10px"><table>
+        <thead><tr id="pvHead"></tr></thead><tbody id="pvBody"></tbody>
+      </table></div>
+    </details>
+  </section>
+
+  <section aria-labelledby="h4s">
+    <h2 id="h4s"><span class="step">STEP 4</span>Save the files</h2>
+    <p class="muted">Set your Scope to the Customer level, then import the trial file and test those cards at a reader. When they work, import the remaining file. The two files never share a person, so nobody is imported twice.</p>
+    <div class="banner">Don't import the Full Converted File to Qumulex if you import the trial as suggested. The trial people's cards will already exist in Qumulex, and the import will fail with a uniqueness error.</div>
+    <div class="tablebox"><table>
+      <thead><tr><th>File</th><th class="num">People</th><th>When to use it</th><th></th></tr></thead>
+      <tbody id="files"></tbody>
+    </table></div>
+    <span class="toast" id="toast" role="status"></span>
+    <div id="dlNote" class="banner" hidden>Saving files isn't available in this view. Use <b>Copy as text</b>, paste into Notepad, and save it with a <span class="mono">.csv</span> extension and UTF-8 encoding.</div>
+    <textarea id="copyBox" hidden readonly aria-label="Import file text"></textarea>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ---------- conversion core (pure) ---------- */
+const QX_COLS=["CardValue","FirstName","LastName","Suffix","Salutation","JobTitle","Department","EmployeeID","LicensePlate","GroupID"];
+const FIELDS=[
+  {k:"userId",label:"UserID",need:true,alias:["userid","user id","user number","user no","user no."]},
+  {k:"first",label:"First name",need:true,alias:["first name","firstname","first"]},
+  {k:"last",label:"Last name",need:true,alias:["last name","lastname","surname","last"]},
+  {k:"middle",label:"Middle name",alias:["middle name","middlename"]},
+  {k:"dept",label:"Department",alias:["department","dept"]},
+  {k:"group",label:"Access group",alias:["access group","access groups","accessgroup"]},
+  {k:"card",label:"Card number",need:true,alias:["card number","card code","cardnumber","card"]},
+  {k:"site",label:"Site code (facility code)",need:true,alias:["facility code","facility","fc","site code"]},
+  {k:"until",label:"Valid until",alias:["until (valid date)","valid until","expiration","until"]},
+  {k:"title",label:"Title",alias:["title","job title"]},
+  {k:"plate",label:"Car registration",alias:["car registration","license plate","plate"]},
+  {k:"pin",label:"PIN code",alias:["pin code","pin","pincode"]}
+];
+const norm=s=>String(s??"").trim().toLowerCase().replace(/\s+/g," ");
+
+function findHeader(rows){
+  for(let i=0;i<Math.min(rows.length,20);i++){
+    const n=rows[i].map(norm);
+    if(n.includes("first name")||n.includes("userid")||n.includes("card number")) return i;
+  }
+  return 0;
+}
+function autoMap(header){
+  const n=header.map(norm), m={};
+  for(const f of FIELDS){ let idx=-1;
+    for(const a of f.alias){ idx=n.indexOf(a); if(idx>=0) break; }
+    m[f.k]=idx; }
+  return m;
+}
+function cellStr(v){
+  if(v==null) return "";
+  if(v instanceof Date) return {date:v};
+  if(typeof v==="number") return Number.isInteger(v)?String(v):String(v);
+  return String(v).trim();
+}
+function titleCase(s){return s.toLowerCase().replace(/(^|[\s\-'’])([a-zà-ÿ])/g,(m,a,b)=>a+b.toUpperCase());}
+const NONPERSON=/\b(key|fob|door|lock|test|temp\w*|spare|master|guard|visitor|cleaning|maint\w*|vendor|contractor|card)\b/i;
+const NOACCESS=/unauthori[sz]ed|no access|disabled|blocked|inactive/i;
+
+/* rows: array of arrays (data only); map: field->col index; opts; groupCfg: name->{include,gid} */
+function convert(rows,map,opts,groupCfg,today){
+  const get=(r,k)=>map[k]>=0?r[map[k]]:"";
+  const people=new Map(), order=[];
+  for(const r of rows){
+    if(!r||r.every(c=>c===""||c==null)) continue;
+    const uid=String(cellStr(get(r,"userId"))||"");
+    const key=uid||(norm(get(r,"first"))+"|"+norm(get(r,"last")));
+    let p=people.get(key);
+    if(!p){p={uid,first:String(cellStr(get(r,"first"))||""),last:String(cellStr(get(r,"last"))||""),middle:String(cellStr(get(r,"middle"))||""),
+      dept:String(cellStr(get(r,"dept"))||""),group:String(cellStr(get(r,"group"))||""),title:String(cellStr(get(r,"title"))||""),
+      plate:String(cellStr(get(r,"plate"))||""),pin:"",until:get(r,"until"),raw:[]};people.set(key,p);order.push(p);}
+    p.raw.push({card:cellStr(get(r,"card")),site:cellStr(get(r,"site"))});
+    const pin=String(cellStr(get(r,"pin"))||""); if(pin&&pin!=="-1"&&pin!=="0") p.pin=pin;
+  }
+  const issues=[], cardOwner=new Map();
+  const add=(lvl,p,msg)=>issues.push({lvl,uid:p.uid,name:(p.first+" "+p.last).trim(),msg});
+  const groupCounts={};
+  for(const p of order){ groupCounts[p.group]=(groupCounts[p.group]||0)+1; }
+  const out=[];
+  for(const p of order){
+    const name=(p.first+" "+p.last).trim();
+    const gc=groupCfg[p.group]||{include:true,gid:""};
+    p.creds=[];
+    const seen=new Set();
+    for(const c of p.raw){
+      if(c.card===""&&(c.site===""||c.site==="-1")) continue;
+      if(typeof c.card==="object"){add("crit",p,"Card number was turned into a date by Excel. Re-export the file without opening it in Excel.");continue;}
+      if(typeof c.site==="object"){add("crit",p,"Site code was turned into a date by Excel. Re-export the file without opening it in Excel.");continue;}
+      if(c.card===""){add("warn",p,`Site code ${c.site} has no card number. Skipped.`);continue;}
+      if(!/^\d+$/.test(c.card)){add("crit",p,`Card number "${c.card}" is not a whole number. Skipped.`);continue;}
+      if(c.site===""||c.site==="-1"||!/^\d+$/.test(c.site)){add("crit",p,`Card ${c.card} has no site code. Skipped; add it in Qumulex by hand.`);continue;}
+      const site=String(parseInt(c.site,10)), card=String(parseInt(c.card,10)), v=site+"-"+card;
+      if(seen.has(v)){add("info",p,`Card ${v} is listed twice for this person. Kept once.`);continue;}
+      seen.add(v);
+      if(+site>255||+card>65535) add("warn",p,`Card ${v} is outside the 26-bit range (site 0–255, card 0–65535). Check the card format.`);
+      p.creds.push(v);
+      const o=cardOwner.get(v);
+      if(o&&o!==p&&!(opts.merge&&norm(o.first)===norm(p.first)&&norm(o.last)===norm(p.last)&&p.first&&p.last)) add("crit",p,`Card ${v} is also assigned to UserID ${o.uid} (${(o.first+" "+o.last).trim()}). Qumulex needs each card on one person.`);
+      else cardOwner.set(v,p);
+    }
+    // exclusions
+    if(!gc.include){p.skip=`Access Group "${p.group||"(none)"}" is not being imported`;continue;}
+    let untilD=null; const u=p.until;
+    if(u instanceof Date) untilD=u; else if(u&&!isNaN(Date.parse(u))) untilD=new Date(u);
+    if(untilD&&untilD<today){ if(opts.expired){p.skip="Valid-until date has passed";add("info",p,`Left out: access expired ${untilD.toISOString().slice(0,10)}.`);continue;}
+      else add("warn",p,`Access expired ${untilD.toISOString().slice(0,10)}, imported anyway.`);}
+    if(p.pin) add("warn",p,p.creds.length?"Has a PIN code. The Qumulex importer has no PIN column, so add the PIN in Qumulex by hand.":"PIN-only user. The Qumulex importer has no PIN column, so add the PIN in Qumulex by hand.");
+    if(!p.creds.length){ if(!opts.noCard){p.skip="No card";continue;} }
+    if(NONPERSON.test(name)) add("info",p,`"${name}" may not be a person (a key, door or shared card). Check before importing.`);
+    let first=p.first, last=p.last;
+    if(opts.middle&&p.middle) first=first+" "+p.middle;
+    if(opts.titleCase){first=titleCase(first);last=titleCase(last);}
+    if(!first.trim()) first="xx";
+    if(!last.trim()) last="xx";
+    out.push({p,row:{CardValue:p.creds.join(" "),FirstName:first,LastName:last,Suffix:"",Salutation:"",JobTitle:p.title,Department:p.dept,
+      EmployeeID:opts.emp?p.uid:"",LicensePlate:p.plate,GroupID:gc.gid.trim().split(/[\s,;]+/).filter(Boolean).join(" ")}});
+  }
+  if(opts.merge){
+    const byName=new Map(), kept=[];
+    for(const o of out){
+      const p=o.p;
+      if(!p.first||!p.last){kept.push(o);continue;}
+      const nk=norm(p.first)+"|"+norm(p.last), first=byName.get(nk);
+      if(!first){byName.set(nk,o);kept.push(o);continue;}
+      const f=first.p, added=p.creds.filter(c=>!f.creds.includes(c));
+      f.creds.push(...added); first.row.CardValue=f.creds.join(" ");
+      f.merged=(f.merged||[]).concat(p.uid); p.mergedInto=f.uid;
+      const gids=[...first.row.GroupID.split(" "),...o.row.GroupID.split(" ")].filter(Boolean);
+      first.row.GroupID=[...new Set(gids)].join(" ");
+      if(p.group!==f.group) add("info",f,`Combined records were in different Access Groups (${f.group||"none"}, ${p.group||"none"}). Both Groups are kept, separated by a space.`);
+    }
+    out.length=0; out.push(...kept);
+  }
+  return {people:order,out,issues,groupCounts};
+}
+function toCSV(rows,cols){
+  const esc=v=>{v=String(v??"");return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  return "﻿"+[cols.join(","),...rows.map(r=>cols.map(c=>esc(r[c])).join(","))].join("\r\n")+"\r\n";
+}
+function pickTrial(out){
+  const withCards=out.filter(o=>o.row.CardValue&&o.row.FirstName!=="xx"&&o.row.LastName!=="xx"&&!NONPERSON.test(o.row.FirstName+" "+o.row.LastName));
+  const multi=withCards.find(o=>o.p.creds.length>1);
+  const pick=[]; if(multi) pick.push(multi);
+  for(const o of withCards){ if(pick.length>=3) break; if(!pick.includes(o)) pick.push(o); }
+  return pick;
+}
+if(typeof module!=="undefined") module.exports={convert,toCSV,pickTrial,findHeader,autoMap,QX_COLS};
+
+/* ---------- page ---------- */
+if(typeof document!=="undefined"){
+const $=id=>document.getElementById(id);
+const S={header:[],rows:[],map:{},groupCfg:{},result:null,fileBase:"axtrax",filter:"all",sample:false};
+
+function setData(table,name,isSample){
+  const h=findHeader(table);
+  S.header=table[h].map(x=>String(x??"").trim());
+  S.rows=table.slice(h+1).map(r=>{const a=[...r];while(a.length<S.header.length)a.push("");return a;});
+  S.map=autoMap(S.header); S.sample=isSample;
+  S.fileBase=(name||"axtrax").replace(/\.[^.]+$/,"");
+  const groups=[...new Set(S.rows.filter(r=>r.some(c=>c!==""&&c!=null)).map(r=>S.map.group>=0?String(r[S.map.group]??"").trim():""))];
+  S.groupCfg={}; for(const g of groups) S.groupCfg[g]={include:!NOACCESS.test(g),gid:""};
+  $("fileName").textContent=isSample?"Built-in sample loaded":name;
+  $("fileMeta").textContent=isSample?"Drop your own export to replace it":`${S.rows.length.toLocaleString()} rows in sheet`;
+  const missing=FIELDS.filter(f=>f.need&&S.map[f.k]<0).map(f=>f.label);
+  const m=$("loadMsg");
+  if(isSample){m.hidden=false;m.className="banner";m.textContent="These are made-up example rows so you can see how the tool works. Nothing here comes from a real site.";}
+  else if(missing.length){m.hidden=false;m.className="banner crit";m.textContent=`Couldn't find these columns: ${missing.join(", ")}. Make sure this is an AxTraxNG user export and that those fields were included.`;}
+  else {m.hidden=false;m.className="banner ok";m.textContent="All required columns found.";}
+  renderGroups(); run();
+}
+function renderMap(){
+  $("map").innerHTML="";
+  for(const f of FIELDS){
+    const l=document.createElement("label"); l.textContent=f.label+(f.need?" *":"");
+    const s=document.createElement("select"); s.id="map_"+f.k;
+    s.append(new Option("(not in file)","-1"));
+    S.header.forEach((h,i)=>s.append(new Option(h||`Column ${i+1}`,String(i))));
+    s.value=String(S.map[f.k]); s.onchange=()=>{S.map[f.k]=+s.value; if(f.k==="group") setData([S.header,...S.rows],S.fileBase,S.sample); else run();};
+    l.append(s); $("map").append(l);
+  }
+}
+function renderGroups(){
+  const tb=$("groups"); tb.innerHTML="";
+  const counts={}; const seen=new Set();
+  for(const r of S.rows){ if(!r.some(c=>c!==""&&c!=null)) continue; const uid=String(r[S.map.userId]??""); const g=S.map.group>=0?String(r[S.map.group]??"").trim():"";
+    const k=g+"\u0000"+uid; if(seen.has(k)) continue; seen.add(k); counts[g]=(counts[g]||0)+1; }
+  if(!Object.keys(S.groupCfg).length){tb.innerHTML=`<tr><td colspan="4" class="muted">Load an export to see its Access Groups.</td></tr>`;return;}
+  Object.keys(S.groupCfg).sort((a,b)=>(counts[b]||0)-(counts[a]||0)).forEach((g,i)=>{
+    const cfg=S.groupCfg[g], tr=document.createElement("tr");
+    const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=cfg.include; cb.id="g_inc_"+i; cb.setAttribute("aria-label","Import "+(g||"no group"));
+    cb.onchange=()=>{cfg.include=cb.checked;run();};
+    const gi=document.createElement("input"); gi.type="text"; gi.className="gid"; gi.id="g_id_"+i; gi.placeholder="GroupID, or several separated by a space"; gi.value=cfg.gid;
+    gi.setAttribute("aria-label","Qumulex GroupID for "+(g||"no group")); gi.oninput=()=>{cfg.gid=gi.value;run();};
+    const td=x=>{const c=document.createElement("td"); if(x instanceof Node) c.append(x); else c.textContent=x; return c;};
+    const nm=td(g||"(no Access Group)"); if(NOACCESS.test(g)){const s=document.createElement("span");s.className="pill warn";s.style.marginLeft="8px";s.textContent="no access";nm.append(s);}
+    const n=td((counts[g]||0).toLocaleString()); n.className="num";
+    tr.append(td(cb),nm,n,td(gi)); tb.append(tr);
+  });
+}
+function opts(){return {merge:$("optMerge").checked,noCard:$("optNoCard").checked,expired:$("optExpired").checked,titleCase:$("optCase").checked,middle:$("optMiddle").checked,emp:$("optEmp").checked};}
+function run(){
+  S.result=convert(S.rows,S.map,opts(),S.groupCfg,new Date());
+  const R=S.result, imp=R.out.length, cards=R.out.reduce((a,o)=>a+o.p.creds.length,0);
+  const multi=R.out.filter(o=>o.p.creds.length>1).length, mergedN=R.people.filter(p=>p.mergedInto).length, skipped=R.people.length-imp-mergedN;
+  const crit=R.issues.filter(i=>i.lvl==="crit").length, warn=R.issues.filter(i=>i.lvl==="warn").length;
+  const noGid=R.out.filter(o=>!o.row.GroupID).length;
+  $("tiles").innerHTML="";
+  [[imp,"people to import"],[cards,"cards"],[multi,"people with 2+ cards"],[mergedN,"records combined by name"],[skipped,"people left out"],[crit,"must fix",crit?"crit":""],[warn,"to check",warn?"warn":""],[noGid,"without a GroupID",noGid?"warn":""]]
+   .forEach(([v,l,c])=>{const d=document.createElement("div");d.className="tile "+(c||"");d.innerHTML=`<b>${v.toLocaleString()}</b><span>${l}</span>`;$("tiles").append(d);});
+  renderIssues(); renderPreview();
+  renderFiles();
+}
+function renderIssues(){
+  const R=S.result, f=$("filters"); f.innerHTML="";
+  const levels=[["all","All"],["crit","Must fix"],["warn","Check"],["info","Note"]];
+  for(const [k,l] of levels){const n=k==="all"?R.issues.length:R.issues.filter(i=>i.lvl===k).length;
+    const b=document.createElement("button");b.textContent=`${l} (${n})`;b.setAttribute("aria-pressed",S.filter===k);b.onclick=()=>{S.filter=k;renderIssues();};f.append(b);}
+  const rank={crit:0,warn:1,info:2};
+  const list=R.issues.filter(i=>S.filter==="all"||i.lvl===S.filter).sort((a,b)=>rank[a.lvl]-rank[b.lvl]);
+  const tb=$("issues"); tb.innerHTML="";
+  if(!list.length){tb.innerHTML=`<tr><td colspan="4" class="muted">${S.rows.length?"No issues at this level.":"Load an export to check it."}</td></tr>`;return;}
+  const lab={crit:"Must fix",warn:"Check",info:"Note"};
+  for(const i of list.slice(0,1000)){const tr=document.createElement("tr");
+    const p=document.createElement("span");p.className="pill "+i.lvl;p.textContent=lab[i.lvl];
+    const cells=[p,i.uid,i.name,i.msg].map(x=>{const c=document.createElement("td");if(x instanceof Node)c.append(x);else c.textContent=x;return c;});
+    cells[3].style.whiteSpace="normal"; tr.append(...cells); tb.append(tr);}
+}
+function renderPreview(){
+  $("pvHead").innerHTML=QX_COLS.map(c=>`<th>${c}</th>`).join("");
+  const tb=$("pvBody"); tb.innerHTML="";
+  for(const o of S.result.out.slice(0,50)){const tr=document.createElement("tr");
+    for(const c of QX_COLS){const td=document.createElement("td");td.textContent=o.row[c];if(c==="CardValue")td.className="cred";tr.append(td);} tb.append(tr);}
+}
+let dl=null, dlChecked=false;
+(async()=>{try{dl=window.claude?await window.claude.use("downloads"):{save:async({filename,data})=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:"text/csv;charset=utf-8"}));a.download=filename;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);return {status:"saved"};}};}catch(e){dl=null;}
+  dlChecked=true; if(!dl) $("dlNote").hidden=false; renderFiles();})();
+const LAB={crit:"Must fix",warn:"Check",info:"Note"};
+function fileSets(){
+  const out=S.result?S.result.out:[], trial=pickTrial(out), rest=out.filter(o=>!trial.includes(o));
+  const csv=list=>toCSV(list.map(o=>o.row),QX_COLS);
+  return [
+    {id:"trial",title:"1. Trial file",n:trial.length,use:"Import first. Test these cards at a reader.",fn:`${S.fileBase}_qumulex_1_TRIAL.csv`,make:()=>csv(trial),main:true},
+    {id:"rest",title:"2. Remaining file",n:rest.length,use:"Import after the trial works. Everyone except the trial people.",fn:`${S.fileBase}_qumulex_2_REMAINING.csv`,make:()=>csv(rest),main:true},
+    {id:"full",title:"Full Converted File",n:out.length,use:"Only if you skip the trial. Never after it.",fn:`${S.fileBase}_qumulex_FULL.csv`,make:()=>csv(out)},
+    {id:"issues",title:"Issue list",n:S.result?S.result.issues.length:0,unit:"issues",use:"Records to look at before or after import.",fn:`${S.fileBase}_issues.csv`,
+      make:()=>toCSV(S.result.issues.map(i=>({Priority:LAB[i.lvl],UserID:i.uid,Name:i.name,Issue:i.msg})),["Priority","UserID","Name","Issue"])}
+  ];
+}
+function renderFiles(){
+  const tb=$("files"); if(!tb) return; tb.innerHTML="";
+  const loaded=S.rows.length>0;
+  for(const f of fileSets()){
+    const tr=document.createElement("tr");
+    const t=document.createElement("td"); t.innerHTML=`<b>${f.title}</b>`; 
+    const n=document.createElement("td"); n.className="num"; n.textContent=loaded?f.n.toLocaleString():"–";
+    const u=document.createElement("td"); u.textContent=f.use; u.style.whiteSpace="normal"; u.className="muted";
+    const cell=document.createElement("td"), a=document.createElement("div"); a.className="row"; a.style.flexWrap="nowrap"; a.style.justifyContent="flex-end"; cell.append(a);
+    const empty=!loaded||(!f.n&&f.id!=="issues");
+    if(dl){const b=document.createElement("button"); b.textContent="Save"; if(f.main) b.className="primary"; b.disabled=empty;
+      b.setAttribute("aria-label","Save "+f.title); b.onclick=()=>save(f.fn,f.make()); a.append(b);}
+    const c=document.createElement("button"); c.textContent="Copy as text"; c.disabled=empty; c.setAttribute("aria-label","Copy "+f.title+" as text");
+    c.onclick=()=>copyText(f.make().replace(/^﻿/,""),f.title); a.append(c);
+    tr.append(t,n,u,cell); tb.append(tr);
+  }
+}
+async function copyText(t,label){
+  try{await navigator.clipboard.writeText(t);toast("Copied "+label);}
+  catch(e){const b=$("copyBox");b.hidden=false;b.value=t;b.focus();b.select();toast("Press Ctrl+C to copy the selected text");}
+}
+async function save(name,text){
+  if(!dl) return;
+  try{await dl.save({filename:name,data:text});toast("Saved "+name);}
+  catch(e){ if(e&&e.code==="declined") toast("Save cancelled"); else if(e&&e.code==="rate_limited") toast("A save prompt is already open");
+    else {toast("Saving isn't available here. Use Copy instead.");$("dlNote").hidden=false;} }
+}
+function toast(t){$("toast").textContent=t;clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").textContent="",4000);}
+["optMerge","optNoCard","optExpired","optCase","optMiddle","optEmp"].forEach(id=>$(id).onchange=run);
+
+async function readFile(f){
+  try{
+    const buf=await f.arrayBuffer();
+    const wb=XLSX.read(buf,{type:"array",cellDates:true});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const table=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});
+    if(!table.length) throw new Error("empty");
+    setData(table,f.name,false);
+  }catch(e){const m=$("loadMsg");m.hidden=false;m.className="banner crit";m.textContent=`Couldn't read ${f.name}. Save it from AxTraxNG as Excel (.xls or .xlsx) or CSV and try again.`;}
+}
+$("file").onchange=e=>{if(e.target.files[0]) readFile(e.target.files[0]);};
+const dz=$("drop");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("over");}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("over");}));
+dz.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f) readFile(f);});
+renderGroups(); run();
+}
+</script>
+
+</body>
+</html>
